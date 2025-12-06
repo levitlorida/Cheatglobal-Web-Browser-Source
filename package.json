@@ -1,0 +1,21 @@
+{
+  "name": "cheatglobal-browser",
+  "version": "1.0.0",
+  "description": "Cheatglobal - Yenilikçi Web Tarayıcısı",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev"
+  },
+  "keywords": [
+    "browser",
+    "electron",
+    "cheatglobal"
+  ],
+  "author": "levitlorida",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^27.0.0"
+  }
+}
+
