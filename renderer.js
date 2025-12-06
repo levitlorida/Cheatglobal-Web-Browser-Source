@@ -7,12 +7,10 @@ let history = [];
 let bookmarks = [];
 let downloads = [];
 
-// Initialize
 document.addEventListener('DOMContentLoaded', () => {
     try {
         loadBookmarks();
         setupEventListeners();
-        // Attach listeners to hidden initial tab
         const hiddenTab = document.getElementById('hidden-initial-tab');
         if (hiddenTab) {
             attachStartPageListeners(hiddenTab);
@@ -23,7 +21,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function setupEventListeners() {
-    // Window controls
     document.getElementById('minimize-btn').addEventListener('click', () => {
         ipcRenderer.invoke('window-minimize');
     });
@@ -36,7 +33,6 @@ function setupEventListeners() {
         ipcRenderer.invoke('window-close');
     });
 
-    // Navigation buttons
     document.getElementById('back-btn').addEventListener('click', () => {
         const tab = getCurrentTab();
         if (tab && tab.webview) {
@@ -72,7 +68,6 @@ function setupEventListeners() {
                 console.error('Error reloading:', error);
             }
         } else if (tab && (tab.url === 'about:blank' || !tab.url)) {
-            // Reload start page
             const container = document.querySelector(`.webview-container[data-tab-id="${tab.id}"]`);
             if (container) {
                 container.innerHTML = getStartPageHTML();
@@ -84,11 +79,9 @@ function setupEventListeners() {
     });
 
     document.getElementById('home-btn').addEventListener('click', () => {
-        // Create new tab with start page
         createNewTab('about:blank');
     });
 
-    // Address bar
     const addressInput = document.getElementById('address-input');
     addressInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
@@ -97,12 +90,10 @@ function setupEventListeners() {
         }
     });
 
-    // New tab button
     document.getElementById('new-tab-btn').addEventListener('click', () => {
         createNewTab();
     });
 
-    // Toolbar buttons
     document.getElementById('bookmarks-btn').addEventListener('click', () => {
         showSidebar('Yer İşaretleri', renderBookmarks);
     });
@@ -131,7 +122,6 @@ function setupEventListeners() {
         showImportAccountsDialog();
     });
 
-    // Start page search (from index.html) - DIRECT event listeners for reliability
     const startSearchInput = document.getElementById('start-search-input');
     if (startSearchInput) {
         startSearchInput.addEventListener('keypress', (e) => {
@@ -175,7 +165,6 @@ function setupEventListeners() {
         });
     }
 
-    // Global event delegation as backup
     document.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
             const input = e.target;
@@ -198,7 +187,6 @@ function setupEventListeners() {
         }
     });
 
-    // Global search button click handler
     document.addEventListener('click', (e) => {
         const btn = e.target.closest('#start-search-btn, .start-search-btn, .search-btn');
         if (btn && (btn.id === 'start-search-btn' || btn.classList.contains('start-search-btn') || btn.classList.contains('search-btn'))) {
@@ -221,7 +209,6 @@ function setupEventListeners() {
         }
     });
 
-    // Sidebar close
     document.getElementById('sidebar-close').addEventListener('click', () => {
         hideSidebar();
     });
@@ -230,7 +217,6 @@ function setupEventListeners() {
         hideSidebar();
     });
 
-    // Quick links - use event delegation for all quick links (from index.html)
     document.addEventListener('click', (e) => {
         const quickLink = e.target.closest('.quick-link');
         if (quickLink) {
@@ -238,7 +224,6 @@ function setupEventListeners() {
             e.stopPropagation();
             const url = quickLink.getAttribute('data-url');
             if (url) {
-                // If we're on hidden initial tab, create a new tab for navigation
                 if (tabs.length === 0) {
                     createNewTab();
                     setTimeout(() => {
@@ -257,7 +242,6 @@ function createNewTab(url = 'about:blank') {
     tabCounter++;
     const tabId = tabCounter;
     
-    // If this is the first real tab, hide the initial hidden tab and show tab bar
     if (tabs.length === 0) {
         const hiddenTab = document.getElementById('hidden-initial-tab');
         if (hiddenTab) {
@@ -270,14 +254,13 @@ function createNewTab(url = 'about:blank') {
     const tab = {
         id: tabId,
         url: url,
-        realUrl: url, // Real URL for webview
+        realUrl: url,
         title: 'Yeni Sekme',
         webview: null
     };
 
     tabs.push(tab);
 
-    // Create tab element
     const tabsList = document.getElementById('tabs-list');
     const tabElement = document.createElement('div');
     tabElement.className = 'tab';
@@ -295,7 +278,6 @@ function createNewTab(url = 'about:blank') {
 
     tabsList.appendChild(tabElement);
 
-    // Create webview container
     const contentArea = document.querySelector('.content-area');
     const webviewContainer = document.createElement('div');
     webviewContainer.className = 'webview-container';
@@ -304,33 +286,30 @@ function createNewTab(url = 'about:blank') {
     if (url === 'about:blank') {
         webviewContainer.innerHTML = getStartPageHTML();
         attachStartPageListeners(webviewContainer);
-        } else {
-            const webview = document.createElement('webview');
-            webview.src = url;
-            webview.setAttribute('allowpopups', 'true');
-            webview.setAttribute('nodeintegration', 'false');
-            webview.style.width = '100%';
-            webview.style.height = '100%';
-            webviewContainer.appendChild(webview);
-            tab.webview = webview;
+    } else {
+        const webview = document.createElement('webview');
+        webview.src = url;
+        webview.setAttribute('allowpopups', 'true');
+        webview.setAttribute('nodeintegration', 'false');
+        webview.style.width = '100%';
+        webview.style.height = '100%';
+        webviewContainer.appendChild(webview);
+        tab.webview = webview;
 
-            setupWebviewListeners(webview, tab);
-            setupLocationPrivacy(webview);
-        }
+        setupWebviewListeners(webview, tab);
+        setupLocationPrivacy(webview);
+    }
 
     contentArea.appendChild(webviewContainer);
 
-    // Switch to new tab
     switchTab(tabId);
 
-    // Tab click handler
     tabElement.addEventListener('click', (e) => {
         if (!e.target.classList.contains('tab-close')) {
             switchTab(tabId);
         }
     });
 
-    // Tab close handler
     tabElement.querySelector('.tab-close').addEventListener('click', (e) => {
         e.stopPropagation();
         closeTab(tabId);
@@ -340,6 +319,7 @@ function createNewTab(url = 'about:blank') {
         navigateToUrl(url);
     }
 }
+
 
 // Random location data for privacy protection
 const fakeLocations = [
