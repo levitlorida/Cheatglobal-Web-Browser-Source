@@ -25,7 +25,6 @@ function createWindow() {
 
   mainWindow.loadFile('index.html');
   
-  // Show window when ready to prevent white flash
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
   });
@@ -41,7 +40,6 @@ function createWindow() {
   });
 }
 
-// Disable GPU acceleration issues
 app.commandLine.appendSwitch('disable-gpu');
 app.commandLine.appendSwitch('disable-gpu-compositing');
 app.commandLine.appendSwitch('disable-software-rasterizer');
@@ -62,7 +60,6 @@ app.on('window-all-closed', () => {
   }
 });
 
-// IPC Handlers
 ipcMain.handle('window-minimize', () => {
   if (mainWindow) mainWindow.minimize();
 });
@@ -98,4 +95,5 @@ ipcMain.handle('navigate', (event, url) => {
     mainWindow.webContents.send('navigate', url);
   }
 });
+
 
